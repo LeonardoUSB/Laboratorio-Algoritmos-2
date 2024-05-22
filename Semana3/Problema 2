@@ -1,0 +1,116 @@
+#include <iostream>
+#include <vector>
+#include <utility>
+using namespace std;
+int t=0;
+int n=0;
+int cont=0;
+vector<int> arreglo;
+vector <pair<int,int>> VectorR;
+//MergeSort
+void merge(vector<int>&arreglo,int inicio, int mitad, int final){
+    int i,j,k;
+    int elementosIzq = mitad - inicio + 1;
+    int elementosDer = final - mitad;
+ 
+    vector<int>izquierda(elementosIzq);
+    vector<int>derecha(elementosDer);
+ 
+    for(int i = 0; i < elementosIzq; i++){
+        izquierda[i] = arreglo[inicio+i];
+    }
+    for(int j = 0; j < elementosDer; j++){
+        derecha[j] = arreglo[mitad + 1 + j];
+    }
+ 
+    i = 0;
+    j = 0;
+    k = inicio;
+ 
+    while(i < elementosIzq && j < elementosDer){
+        if(izquierda[i] >= derecha[j]){
+            arreglo[k] = izquierda[i];
+            i++;
+        }else{
+            arreglo[k] = derecha[j];
+            j++;
+        }
+        k++;
+    }
+ 
+    while(j < elementosDer){
+        arreglo[k] = derecha[j];
+        j++;
+        k++;
+    }
+ 
+    while(i < elementosIzq){
+        arreglo[k] = izquierda[i];
+        i++;
+        k++;
+    }
+ 
+}
+ 
+void mergeSort(vector<int>&arreglo,int inicio, int final){
+    if(inicio < final){
+        int mitad = inicio + (final - inicio)/2;
+        mergeSort(arreglo,inicio,mitad);
+        mergeSort(arreglo,mitad+1,final);
+        merge(arreglo,inicio,mitad,final);
+    }
+}
+int main(){
+    cin >> t;
+    for(int i = 0; i < t; i++){
+        cin >> n;
+        arreglo.resize(n);
+        for(int j = 0; j < n; j++){
+            cin >> arreglo[j];
+        }
+        vector<int> arregloCopy = arreglo;
+        mergeSort(arreglo,0,n-1);
+        //Resolvemos el problema
+        VectorR.resize(n);
+        VectorR[0].first=arreglo[0];
+        VectorR[0].second=n-1;
+        for (int k = 1; k < n; k++){
+            long long num = arreglo[k];
+            
+            for (int l=k+1; l<n; l++){
+                num = num + arreglo[l];
+                cont=cont+1;
+            }
+        for (int m = k-1; m >= 0; m--){
+            if (num >= arreglo[m]){
+                num = num + arreglo[m];
+                cont=cont+1;
+            }
+        }
+        VectorR[k].first=arreglo[k];
+        VectorR[k].second=cont;
+        
+        cont=0;
+        }
+        //Aplicamos Binary Search
+        
+        for (int o=0; o<n; o++){
+            int inicio=0;
+            int final=n;
+            int temp=arregloCopy[o];
+            while (inicio<final){
+                int mitad=(inicio+final)/2;
+                if (VectorR[mitad].first>temp){
+                    inicio=mitad+1;
+                }
+                else{
+                    final=mitad;
+                }
+            }
+            cout<<VectorR[final].second<<" ";
+        }
+        cout<<endl;
+        
+    }
+ 
+}
