@@ -5,30 +5,30 @@ using namespace std;
 int t=0;
 int n=0;
 int cont=0;
-vector<int> arreglo;
+vector<pair<int,int>>  arreglo;
 vector <pair<int,int>> VectorR;
 //MergeSort
-void merge(vector<int>&arreglo,int inicio, int mitad, int final){
+void merge(vector<pair<int,int>>&arreglo,int inicio, int mitad, int final){
     int i,j,k;
     int elementosIzq = mitad - inicio + 1;
     int elementosDer = final - mitad;
- 
-    vector<int>izquierda(elementosIzq);
-    vector<int>derecha(elementosDer);
- 
+
+    vector<pair<int,int>>izquierda(elementosIzq);
+    vector<pair<int,int>>derecha(elementosDer);
+
     for(int i = 0; i < elementosIzq; i++){
         izquierda[i] = arreglo[inicio+i];
     }
     for(int j = 0; j < elementosDer; j++){
         derecha[j] = arreglo[mitad + 1 + j];
     }
- 
+
     i = 0;
     j = 0;
     k = inicio;
- 
+
     while(i < elementosIzq && j < elementosDer){
-        if(izquierda[i] >= derecha[j]){
+        if(izquierda[i].first >= derecha[j].first){
             arreglo[k] = izquierda[i];
             i++;
         }else{
@@ -37,22 +37,22 @@ void merge(vector<int>&arreglo,int inicio, int mitad, int final){
         }
         k++;
     }
- 
+
     while(j < elementosDer){
         arreglo[k] = derecha[j];
         j++;
         k++;
     }
- 
+
     while(i < elementosIzq){
         arreglo[k] = izquierda[i];
         i++;
         k++;
     }
- 
+
 }
- 
-void mergeSort(vector<int>&arreglo,int inicio, int final){
+
+void mergeSort(vector<pair<int,int>>&arreglo,int inicio, int final){
     if(inicio < final){
         int mitad = inicio + (final - inicio)/2;
         mergeSort(arreglo,inicio,mitad);
@@ -60,57 +60,61 @@ void mergeSort(vector<int>&arreglo,int inicio, int final){
         merge(arreglo,inicio,mitad,final);
     }
 }
+
+int binary_search(vector<pair<int,int>>&arreglo,int inicio, int final, long long numero){
+    while (inicio < final){
+        int mitad = inicio + (final - inicio)/2;
+        if(arreglo[mitad].first > numero){
+            inicio = mitad+1;
+        }else{
+            final = mitad;
+        }
+    }
+    return inicio;
+}
+
+
 int main(){
     cin >> t;
     for(int i = 0; i < t; i++){
         cin >> n;
         arreglo.resize(n);
         for(int j = 0; j < n; j++){
-            cin >> arreglo[j];
+            cin >> arreglo[j].first;
+            arreglo[j].second=j;
         }
-        vector<int> arregloCopy = arreglo;
+        //Ordenamos el arreglo de mayor a menor
         mergeSort(arreglo,0,n-1);
         //Resolvemos el problema
-        VectorR.resize(n);
-        VectorR[0].first=arreglo[0];
-        VectorR[0].second=n-1;
-        for (int k = 1; k < n; k++){
-            long long num = arreglo[k];
-            
-            for (int l=k+1; l<n; l++){
-                num = num + arreglo[l];
-                cont=cont+1;
-            }
-        for (int m = k-1; m >= 0; m--){
-            if (num >= arreglo[m]){
-                num = num + arreglo[m];
-                cont=cont+1;
-            }
-        }
-        VectorR[k].first=arreglo[k];
-        VectorR[k].second=cont;
-        
+        int index1=n-1;
+        long long suma=0;
+        int temp=0;
         cont=0;
-        }
-        //Aplicamos Binary Search
-        
-        for (int o=0; o<n; o++){
-            int inicio=0;
-            int final=n;
-            int temp=arregloCopy[o];
-            while (inicio<final){
-                int mitad=(inicio+final)/2;
-                if (VectorR[mitad].first>temp){
-                    inicio=mitad+1;
+        VectorR.resize(n);
+        while (index1>=0){
+            suma+=arreglo[index1].first;
+            temp=index1;
+            int index2=binary_search(arreglo,0,n-1,suma);
+            while (temp != index2){
+                for (int j = index2; j < temp; j++){
+                    suma+=arreglo[j].first;
                 }
-                else{
-                    final=mitad;
-                }
+                temp=index2;
+                index2=binary_search(arreglo,0,temp,suma);
             }
-            cout<<VectorR[final].second<<" ";
+            for (int j = index2; j <= index1; j++){
+                VectorR[j]=make_pair(arreglo[j].second,n-temp-1);
+                
+            }
+            index1=temp-1;
         }
-        cout<<endl;
         
-    }
- 
+        //Entragamos la respuesta en el orden original
+        mergeSort(VectorR,0,n-1);
+        for (int j = n-1; j >=0; j--){
+            cout << VectorR[j].second << " ";
+        }
+        cout << endl;
+        
+    } 
 }
