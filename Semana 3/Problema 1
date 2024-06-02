@@ -1,0 +1,99 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+int t=0;
+int n=0;
+int c=0;
+vector<int> v;
+
+void merge(vector<int>&arreglo,int inicio, int mitad, int final){
+    int i,j,k;
+    int elementosIzq = mitad - inicio + 1;
+    int elementosDer = final - mitad;
+
+    vector<int>izquierda(elementosIzq);
+    vector<int>derecha(elementosDer);
+
+    for(int i = 0; i < elementosIzq; i++){
+        izquierda[i] = arreglo[inicio+i];
+    }
+    for(int j = 0; j < elementosDer; j++){
+        derecha[j] = arreglo[mitad + 1 + j];
+    }
+
+    i = 0;
+    j = 0;
+    k = inicio;
+
+    while(i < elementosIzq && j < elementosDer){
+        if(izquierda[i] <= derecha[j]){
+            arreglo[k] = izquierda[i];
+            i++;
+        }else{
+            arreglo[k] = derecha[j];
+            j++;
+        }
+        k++;
+    }
+
+    while(j < elementosDer){
+        arreglo[k] = derecha[j];
+        j++;
+        k++;
+    }
+
+    while(i < elementosIzq){
+        arreglo[k] = izquierda[i];
+        i++;
+        k++;
+    }
+
+}
+
+void mergeSort(vector<int>&arreglo,int inicio, int final){
+    if(inicio < final){
+        int mitad = inicio + (final - inicio)/2;
+        mergeSort(arreglo,inicio,mitad);
+        mergeSort(arreglo,mitad+1,final);
+        merge(arreglo,inicio,mitad,final);
+    }
+}
+
+//Problema central
+int main() {
+    cin >> t;
+    for (int i = 0; i < t; i++) {
+        cin >> n;
+        cin >> c;
+        v.resize(n);
+        for (int j = 0; j < n; j++) {
+            cin >> v[j];
+        }
+        //Aplicamos Merge Sort para ordenar el arreglo
+        mergeSort(v,0,n-1);
+        //Usaremos Binary search usando la distancia mínima y maxima entre los elementos como rango
+        //Reducimos por la derecha si no es posible tener la distancia dado pero mid
+        //Aumentamos por la izquierda si es posible tener la distancia dada por mid
+        int low = 0;
+        int high = v[n-1]-v[0];
+        while (low < high) {
+            int mid = low + (high - low) / 2;
+            int cont = 1;
+            int left = v[0];
+            for (int j = 1; j < n; j++) {
+                if (v[j] - left >= mid) {
+                    cont++;
+                    left = v[j];
+                }
+            }
+            if (cont >= c) {
+                low = mid + 1;
+            } else {
+                high = mid;
+            }
+        }
+        cout << low-1 << endl;
+        
+    }
+  
+}
