@@ -1,0 +1,153 @@
+#include <iostream>
+#include <vector>
+#include <cmath>
+using namespace std;
+
+unsigned int n, d1, p1, r1, m1, d2, p2,r2,m2; 
+unsigned int n_copy;
+vector<vector<unsigned long long int>> A, B, C;
+vector<unsigned long long int> V;
+
+long long Potencia_2(long long n)
+{
+    long long a = log2(n);
+ 
+    if (pow(2, a) == n)
+        return n;
+ 
+    return pow(2, a + 1);
+}
+
+//Funcion de suma de matrices
+vector<vector<unsigned long long int>> suma(vector<vector<unsigned long long int>>& A,vector<vector<unsigned long long int>>&B, int signo){
+    vector<vector<unsigned long long int>> C;
+    int rango =A.size();
+    C.resize(rango, vector<unsigned long long int>(rango));
+    for (int i=0; i<rango; ++i){
+        for (int j=0; j<rango; ++j) {
+            C[i][j] = A[i][j] + signo*B[i][j];
+        }
+    }
+    return C;
+}
+//Funcion de Strassen
+vector<vector<unsigned long long int>> strassen(vector<vector<unsigned long long int>>& A,vector<vector<unsigned long long int>>& B){
+    vector<vector<unsigned long long int>> C;
+    int n = A.size();
+    C.resize(n, vector<unsigned long long int>(n));
+     if (A.size() == 1 && B.size() == 1) {
+        C[0][0] = A[0][0] * B[0][0];
+        return C;
+    }
+    int mitad = n / 2;
+    
+    vector<vector<unsigned long long int>> A11(mitad, vector<unsigned long long int>(mitad));
+    vector<vector<unsigned long long int>> A12(mitad, vector<unsigned long long int>(mitad));
+    vector<vector<unsigned long long int>> A21(mitad, vector<unsigned long long int>(mitad));
+    vector<vector<unsigned long long int>> A22(mitad, vector<unsigned long long int>(mitad));
+    vector<vector<unsigned long long int>> B11(mitad, vector<unsigned long long int>(mitad));
+    vector<vector<unsigned long long int>> B12(mitad, vector<unsigned long long int>(mitad));
+    vector<vector<unsigned long long int>> B21(mitad, vector<unsigned long long int>(mitad));
+    vector<vector<unsigned long long int>> B22(mitad, vector<unsigned long long int>(mitad));
+    
+   
+    for (int i = 0; i < mitad; i++) {
+        for (int j = 0; j < mitad; j++) {
+            A11[i][j] = A[i][j];
+            A12[i][j] = A[i][j + mitad];
+            A21[i][j] = A[i + mitad][j];
+            A22[i][j] = A[i + mitad][j + mitad];
+            B11[i][j] = B[i][j];
+            B12[i][j] = B[i][j + mitad];
+            B21[i][j] = B[i + mitad][j];
+            B22[i][j] = B[i + mitad][j + mitad];
+        }
+    }
+    
+    vector<vector<unsigned long long int>> M1(mitad, vector<unsigned long long int>(mitad));
+    vector<vector<unsigned long long int>> M2(mitad, vector<unsigned long long int>(mitad));
+    vector<vector<unsigned long long int>> M3(mitad, vector<unsigned long long int>(mitad));
+    vector<vector<unsigned long long int>> M4(mitad, vector<unsigned long long int>(mitad));
+    vector<vector<unsigned long long int>> M5(mitad, vector<unsigned long long int>(mitad));
+    vector<vector<unsigned long long int>> M6(mitad, vector<unsigned long long int>(mitad));
+    vector<vector<unsigned long long int>> M7(mitad, vector<unsigned long long int>(mitad));
+
+    vector<vector<unsigned long long int>>A11_A22 = suma(A11, A22, 1);
+    vector<vector<unsigned long long int>>B11_B22 = suma(B11, B22, 1);
+    vector<vector<unsigned long long int>>A21_A22 = suma(A21, A22, 1);
+    vector<vector<unsigned long long int>>B12_B22 = suma(B12, B22, -1);
+    vector<vector<unsigned long long int>>B21_B11 = suma(B21, B11, -1);
+    vector<vector<unsigned long long int>>A11_A12 = suma(A11, A12, 1);
+    vector<vector<unsigned long long int>>A21_A11 = suma(A21, A11, -1);
+    vector<vector<unsigned long long int>>B11_B12 = suma(B11, B12, 1);
+    vector<vector<unsigned long long int>>A12_A22 = suma(A12, A22, -1);
+    vector<vector<unsigned long long int>>B21_B22 = suma(B21, B22, 1);
+
+    M1 = strassen(A11_A22, B11_B22);
+    M2 = strassen(A21_A22, B11);
+    M3 = strassen(A11, B12_B22);
+    M4 = strassen(A22, B21_B11);
+    M5 = strassen(A11_A12, B22);
+    M6 = strassen(A21_A11, B11_B12);
+    M7 = strassen(A12_A22, B21_B22);
+
+    vector<vector<unsigned long long int>> M1_M4 = suma(M1, M4, 1);
+    vector<vector<unsigned long long int>> M7_M5 = suma(M7, M5, -1);
+    vector<vector<unsigned long long int>> M1_M4_M5_M7 = suma(M1_M4, M7_M5, 1);
+    vector<vector<unsigned long long int>> M3_M5 = suma(M3, M5, 1);
+    vector<vector<unsigned long long int>> M2_M4 = suma(M2, M4, 1);
+    vector<vector<unsigned long long int>> M1_M2 = suma(M1, M2, -1);
+    vector<vector<unsigned long long int>> M3_M6 = suma(M3, M6, 1);
+    vector<vector<unsigned long long int>> M1_M2_M3_M6 = suma(M1_M2, M3_M6, 1);
+ 
+    for (int i = 0; i < mitad; i++) {
+        for (int j = 0; j < mitad; j++) {
+            C[i][j] = M1_M4_M5_M7[i][j];
+            C[i][j + mitad] = M3_M5[i][j];
+            C[i + mitad][j] = M2_M4[i][j];
+            C[i + mitad][j + mitad] = M1_M2_M3_M6[i][j];
+        }
+    }
+    return C;
+    
+}
+
+int main(){
+    //here you need to read n, p1, d1, r1, m1, p2, d2, r2, m2 from input
+    cin >> n >> p1 >> d1 >> r1 >> m1 >> p2 >> d2 >> r2 >> m2;
+    int delta = Potencia_2(n);
+    if (delta != n)
+    {
+        unsigned int n_copy = n;
+        n = delta;
+    }
+    else{
+        n_copy = n;
+    }
+    A.resize(n, vector<unsigned long long int>(n));
+    B.resize(n, vector<unsigned long long int>(n));
+    C.resize(n, vector<unsigned long long int>(n));
+    V.resize(n);
+
+for (int i=0; i<n; ++i){
+    for (int j=0; j<n; ++j) {
+        d1 = d1 * p1 + r1;
+        d2 = d2 * p2 + r2;
+        A[i][j] = d1 >> (32 - m1);
+        B[i][j] = d2 >> (32 - m2);
+    }
+}
+//here you need to calculate C=A*B
+C = strassen(A,B);
+
+
+for (unsigned i=0; i<n_copy; ++i) {
+    V[i] = 0;
+    for (int j=0; j<n; ++j)
+        V[i] ^= C[i][j];
+}
+//here you need to output V[0], V[1], ..., V[n-1], separated by spaces.
+for (int i=0; i<n_copy; ++i) {
+    cout << V[i] << " ";
+}
+}
