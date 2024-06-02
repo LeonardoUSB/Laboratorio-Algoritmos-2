@@ -10,38 +10,38 @@ int tmp=0;
 vector <int> arreglo;
 vector <pair<int,int>> VectorR;
 
-// Función para seleccionar un pivote aleatorio
-int randomPivot(int low, int high) {
+// Función para seleccionar un pivotee aleatorio
+int Random_pivote(int low, int high) {
     random_device rd;
     mt19937 gen(rd());
     uniform_int_distribution<> dis(low, high);
     return dis(gen);
 }
 
-// Función para particionar el vector y colocar los elementos menores al pivote a la izquierda y los mayores a la derecha
-int partition(vector <pair<int,int>>& arr, int low, int high) {
-    int pivotIndex = randomPivot(low, high);
-    int pivot = arr[pivotIndex].second;
-    swap(arr[pivotIndex],arr[high]);
+// Función para particionar el vector y colocar los elementos menores al pivotee a la izquierda y los mayores a la derecha
+int particion(vector <pair<int,int>>& arreglo, int low, int high) {
+    int index = Random_pivote(low, high);
+    int pivote = arreglo[index].second;
+    swap(arreglo[index],arreglo[high]);
     int i = low - 1;
 
     for (int j = low; j < high; j++) {
-        if (arr[j].second < pivot) {
+        if (arreglo[j].second < pivote) {
             i++;
-            swap(arr[i], arr[j]);
+            swap(arreglo[i], arreglo[j]);
         }
     }
 
-    swap(arr[i+1],arr[high]);
+    swap(arreglo[i+1],arreglo[high]);
     return i + 1;
 }
 
 // Función recursiva para realizar Quicksort
-void quicksort(vector <pair<int,int>>& arr, int low, int high) {
+void quicksort(vector <pair<int,int>>& arreglo, int low, int high) {
     if (low < high) {
-        int pivotIndex = partition(arr, low, high);
-        quicksort(arr, low, pivotIndex - 1);
-        quicksort(arr, pivotIndex + 1, high);
+        int index = particion(arreglo, low, high);
+        quicksort(arreglo, low, index - 1);
+        quicksort(arreglo, index + 1, high);
     }
 }
 
@@ -55,7 +55,6 @@ int main() {
         }
 
         //Llenamos otro arreglo con información de los números repetidos
-        //Funciona encontrando repetidos y almacenando en el VectorR el numero y su repeticion
         for (int k=0; k<n;k++){
             tmp=arreglo[k];
             for(int l=k; l<n;l++){
@@ -78,7 +77,6 @@ int main() {
         quicksort(VectorR, 0, VectorR.size() - 1);
         
         //Imprimos los resultados en orden
-        //La copia del arreglo se usa porque, por como se creo, almacena el orden de aparición
         for(int o=VectorR.size()-1; o>=0;o--){
             int temp= VectorR[o].second;
             for(int p=0; p<VectorR_Copy.size();p++){
