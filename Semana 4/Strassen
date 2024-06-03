@@ -1,153 +1,193 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <cstdint>
+
 using namespace std;
 
-unsigned int n, d1, p1, r1, m1, d2, p2,r2,m2; 
-unsigned int n_copy;
-vector<vector<unsigned long long int>> A, B, C;
-vector<unsigned long long int> V;
+// Ajustar las dimensiones de las matrices para que sean potencias
 
-long long Potencia_2(long long n)
+int potencia2(int k){
+    return pow(2, int(ceil(log2(k))));
+}
+
+
+// Suma Matrices
+void Suma(const vector<vector<long long unsigned int>> &A, const vector<vector<long long unsigned int>> &B, vector<vector<long long unsigned int>> &C, int Dims){
+    for (int i = 0; i < Dims; i++){
+        for (int j = 0; j < Dims; j++){
+            C[i][j] = A[i][j] + B[i][j];
+        }
+    }
+}
+// Resta Matrices
+void Resta(const vector<vector<long long unsigned int>> &A, const vector<vector<long long unsigned int>> &B, vector<vector<long long unsigned int>> &C, int Dims){
+    for (int i = 0; i < Dims; i++){
+        for (int j = 0; j < Dims; j++){
+            C[i][j] = A[i][j] - B[i][j];
+        }
+    }
+}
+
+// Multiplicacion Estander de Matrices
+void Multiplicacion(const vector<vector<long long unsigned int>> &A, const vector<vector<long long unsigned int>> &B, vector<vector<long long unsigned int>> &C, int Dims) {
+    for (int i = 0; i < Dims; ++i) {
+        for (int j = 0; j < Dims; ++j) {
+            C[i][j] = 0;
+            for (int k = 0; k < Dims; ++k) {
+                C[i][j] += A[i][k] * B[k][j];
+            }
+        }
+    }
+}
+
+// Algoritmo de Strassen para multiplicar dos matrices.
+void Strassen(const vector<vector<long long unsigned int>> &A, const vector<vector<long long unsigned int>> &B, vector<vector<long long unsigned int>> &C, int Dims, int minimo)
 {
-    long long a = log2(n);
- 
-    if (pow(2, a) == n)
-        return n;
- 
-    return pow(2, a + 1);
-}
-
-//Funcion de suma de matrices
-vector<vector<unsigned long long int>> suma(vector<vector<unsigned long long int>>& A,vector<vector<unsigned long long int>>&B, int signo){
-    vector<vector<unsigned long long int>> C;
-    int rango =A.size();
-    C.resize(rango, vector<unsigned long long int>(rango));
-    for (int i=0; i<rango; ++i){
-        for (int j=0; j<rango; ++j) {
-            C[i][j] = A[i][j] + signo*B[i][j];
-        }
-    }
-    return C;
-}
-//Funcion de Strassen
-vector<vector<unsigned long long int>> strassen(vector<vector<unsigned long long int>>& A,vector<vector<unsigned long long int>>& B){
-    vector<vector<unsigned long long int>> C;
-    int n = A.size();
-    C.resize(n, vector<unsigned long long int>(n));
-     if (A.size() == 1 && B.size() == 1) {
-        C[0][0] = A[0][0] * B[0][0];
-        return C;
-    }
-    int mitad = n / 2;
-    
-    vector<vector<unsigned long long int>> A11(mitad, vector<unsigned long long int>(mitad));
-    vector<vector<unsigned long long int>> A12(mitad, vector<unsigned long long int>(mitad));
-    vector<vector<unsigned long long int>> A21(mitad, vector<unsigned long long int>(mitad));
-    vector<vector<unsigned long long int>> A22(mitad, vector<unsigned long long int>(mitad));
-    vector<vector<unsigned long long int>> B11(mitad, vector<unsigned long long int>(mitad));
-    vector<vector<unsigned long long int>> B12(mitad, vector<unsigned long long int>(mitad));
-    vector<vector<unsigned long long int>> B21(mitad, vector<unsigned long long int>(mitad));
-    vector<vector<unsigned long long int>> B22(mitad, vector<unsigned long long int>(mitad));
-    
-   
-    for (int i = 0; i < mitad; i++) {
-        for (int j = 0; j < mitad; j++) {
-            A11[i][j] = A[i][j];
-            A12[i][j] = A[i][j + mitad];
-            A21[i][j] = A[i + mitad][j];
-            A22[i][j] = A[i + mitad][j + mitad];
-            B11[i][j] = B[i][j];
-            B12[i][j] = B[i][j + mitad];
-            B21[i][j] = B[i + mitad][j];
-            B22[i][j] = B[i + mitad][j + mitad];
-        }
-    }
-    
-    vector<vector<unsigned long long int>> M1(mitad, vector<unsigned long long int>(mitad));
-    vector<vector<unsigned long long int>> M2(mitad, vector<unsigned long long int>(mitad));
-    vector<vector<unsigned long long int>> M3(mitad, vector<unsigned long long int>(mitad));
-    vector<vector<unsigned long long int>> M4(mitad, vector<unsigned long long int>(mitad));
-    vector<vector<unsigned long long int>> M5(mitad, vector<unsigned long long int>(mitad));
-    vector<vector<unsigned long long int>> M6(mitad, vector<unsigned long long int>(mitad));
-    vector<vector<unsigned long long int>> M7(mitad, vector<unsigned long long int>(mitad));
-
-    vector<vector<unsigned long long int>>A11_A22 = suma(A11, A22, 1);
-    vector<vector<unsigned long long int>>B11_B22 = suma(B11, B22, 1);
-    vector<vector<unsigned long long int>>A21_A22 = suma(A21, A22, 1);
-    vector<vector<unsigned long long int>>B12_B22 = suma(B12, B22, -1);
-    vector<vector<unsigned long long int>>B21_B11 = suma(B21, B11, -1);
-    vector<vector<unsigned long long int>>A11_A12 = suma(A11, A12, 1);
-    vector<vector<unsigned long long int>>A21_A11 = suma(A21, A11, -1);
-    vector<vector<unsigned long long int>>B11_B12 = suma(B11, B12, 1);
-    vector<vector<unsigned long long int>>A12_A22 = suma(A12, A22, -1);
-    vector<vector<unsigned long long int>>B21_B22 = suma(B21, B22, 1);
-
-    M1 = strassen(A11_A22, B11_B22);
-    M2 = strassen(A21_A22, B11);
-    M3 = strassen(A11, B12_B22);
-    M4 = strassen(A22, B21_B11);
-    M5 = strassen(A11_A12, B22);
-    M6 = strassen(A21_A11, B11_B12);
-    M7 = strassen(A12_A22, B21_B22);
-
-    vector<vector<unsigned long long int>> M1_M4 = suma(M1, M4, 1);
-    vector<vector<unsigned long long int>> M7_M5 = suma(M7, M5, -1);
-    vector<vector<unsigned long long int>> M1_M4_M5_M7 = suma(M1_M4, M7_M5, 1);
-    vector<vector<unsigned long long int>> M3_M5 = suma(M3, M5, 1);
-    vector<vector<unsigned long long int>> M2_M4 = suma(M2, M4, 1);
-    vector<vector<unsigned long long int>> M1_M2 = suma(M1, M2, -1);
-    vector<vector<unsigned long long int>> M3_M6 = suma(M3, M6, 1);
-    vector<vector<unsigned long long int>> M1_M2_M3_M6 = suma(M1_M2, M3_M6, 1);
- 
-    for (int i = 0; i < mitad; i++) {
-        for (int j = 0; j < mitad; j++) {
-            C[i][j] = M1_M4_M5_M7[i][j];
-            C[i][j + mitad] = M3_M5[i][j];
-            C[i + mitad][j] = M2_M4[i][j];
-            C[i + mitad][j + mitad] = M1_M2_M3_M6[i][j];
-        }
-    }
-    return C;
-    
-}
-
-int main(){
-    //here you need to read n, p1, d1, r1, m1, p2, d2, r2, m2 from input
-    cin >> n >> p1 >> d1 >> r1 >> m1 >> p2 >> d2 >> r2 >> m2;
-    int delta = Potencia_2(n);
-    if (delta != n)
+     // Usamos multiplicacion Estandar cuando el rango es pequeño:
+    if (Dims <= minimo)
     {
-        unsigned int n_copy = n;
-        n = delta;
+        Multiplicacion(A, B, C, Dims);
+        return;
     }
-    else{
-        n_copy = n;
-    }
-    A.resize(n, vector<unsigned long long int>(n));
-    B.resize(n, vector<unsigned long long int>(n));
-    C.resize(n, vector<unsigned long long int>(n));
-    V.resize(n);
 
-for (int i=0; i<n; ++i){
-    for (int j=0; j<n; ++j) {
-        d1 = d1 * p1 + r1;
-        d2 = d2 * p2 + r2;
-        A[i][j] = d1 >> (32 - m1);
-        B[i][j] = d2 >> (32 - m2);
+    
+    int mitad = Dims / 2;
+    
+
+    //Iniciamos todas las submatrices y operandos de strassen
+    vector<long long unsigned int> z(mitad);
+    vector<vector<long long unsigned int>>
+        a_11(mitad, z), a_12(mitad, z), a_21(mitad, z), a_22(mitad, z),
+        b_11(mitad, z), b_12(mitad, z), b_21(mitad, z), b_22(mitad, z),
+        c_11(mitad, z), c_12(mitad, z), c_21(mitad, z), c_22(mitad, z),
+        p_1(mitad, z), p_2(mitad, z), p_3(mitad, z), p_4(mitad, z),
+        p_5(mitad, z), p_6(mitad, z), p_7(mitad, z),
+        Result_a(mitad, z), Result_b(mitad, z);
+
+    //Los lleanmos con los datos de las matrices A y B
+   
+    int i, j;
+    for (i = 0; i < mitad; i++)
+    {
+        for (j = 0; j < mitad; j++)
+        {
+            
+            a_11[i][j] = A[i][j];       
+            a_12[i][j] = A[i][j + mitad];   
+            a_21[i][j] = A[i + mitad][j];
+            a_22[i][j] = A[i + mitad][j + mitad];
+            b_11[i][j] = B[i][j];
+            b_12[i][j] = B[i][j + mitad];
+            b_21[i][j] = B[i + mitad][j];
+            b_22[i][j] = B[i + mitad][j + mitad];
+        }
+    }
+
+    // Calcular p_1 a p_7.
+    
+    
+    Suma(a_11, a_22, Result_a, mitad);
+    Suma(b_11, b_22, Result_b, mitad);
+    Strassen(Result_a, Result_b, p_1, mitad, minimo);
+    Suma(a_21, a_22, Result_a, mitad);
+    Strassen(Result_a, b_11, p_2, mitad, minimo);
+    Resta(b_12, b_22, Result_b, mitad);
+    Strassen(a_11, Result_b, p_3, mitad, minimo);
+    Resta(b_21, b_11, Result_b, mitad);
+    Strassen(a_22, Result_b, p_4, mitad, minimo);
+    Suma(a_11, a_12, Result_a, mitad);
+    Strassen(Result_a, b_22, p_5, mitad, minimo);
+    Resta(a_21, a_11, Result_a, mitad);
+    Suma(b_11, b_12, Result_b, mitad);
+    Strassen(Result_a, Result_b, p_6, mitad, minimo);
+    Resta(a_12, a_22, Result_a, mitad);
+    Suma(b_21, b_22, Result_b, mitad);
+    Strassen(Result_a, Result_b, p_7, mitad, minimo);
+
+    // con lo anterior, calculamos las submatrices resultantes c_ij:
+
+
+    Suma(p_3, p_5, c_12, mitad);
+    Suma(p_2, p_4, c_21, mitad);
+    Suma(p_1, p_4, Result_a, mitad);
+    Suma(Result_a, p_7, Result_b, mitad);
+    Resta(Result_b, p_5, c_11, mitad);
+    Suma(p_1, p_3, Result_a, mitad);
+    Suma(Result_a, p_6, Result_b, mitad);
+   Resta(Result_b, p_2, c_22, mitad);
+
+    // Agrupamos las submatrices resultantes c_ij en la matriz C:
+    for (i = 0; i < mitad; i++)
+    {
+        for (j = 0; j < mitad; j++)
+        {
+            C[i][j] = c_11[i][j];
+            C[i][j + mitad] = c_12[i][j];
+            C[i + mitad][j] = c_21[i][j];
+            C[i + mitad][j + mitad] = c_22[i][j];
+        }
     }
 }
-//here you need to calculate C=A*B
-C = strassen(A,B);
+
+int main() {
+
+    long long unsigned int n, i, j, d1, p_1, r1, m1, d2, p_2, r2, m2;
+    cin >> n >> p_1 >> d1 >> r1 >> m1 >> p_2 >> d2 >> r2 >> m2;
 
 
-for (unsigned i=0; i<n_copy; ++i) {
-    V[i] = 0;
-    for (int j=0; j<n; ++j)
-        V[i] ^= C[i][j];
-}
-//here you need to output V[0], V[1], ..., V[n-1], separated by spaces.
-for (int i=0; i<n_copy; ++i) {
-    cout << V[i] << " ";
-}
+    vector<vector<uint32_t>> A(n, vector<uint32_t>(n));
+    vector<vector<uint32_t>> B(n, vector<uint32_t>(n));
+    vector<vector<long long unsigned int>> C(n, vector<long long unsigned int>(n));
+    vector<long long unsigned int> V(n, 0);
+
+    /* se generan las matirces A y B utilizando las variables de entrada: */
+    for (i = 0; i < n; ++i) {
+        for (j = 0; j < n; ++j) {
+            d1 = d1 * p_1 + r1;
+            d2 = d2 * p_2 + r2;
+            A[i][j] = d1 >> (32 - m1);
+            B[i][j] = d2 >> (32 - m2);
+        }
+    }
+
+    // se calcula la potencia de 2 más cercana a n:
+    int mitad = potencia2(n);
+    vector<long long unsigned int> z(mitad);
+    vector<vector<long long unsigned int>> A_exp(mitad, z), B_exp(mitad, z), C_exp(mitad, z);
+
+    /* los valores de las matrices A y B se copian a A_exp y B_exp: */
+    for (i = 0; i < n; ++i) {
+        for (j = 0; j < n; ++j) {
+            A_exp[i][j] = static_cast<long long unsigned int>(A[i][j]);
+            B_exp[i][j] = static_cast<long long unsigned int>(B[i][j]);
+        }
+    }
+
+    // límite para cambiar a multiplicación estándar cuando el tamaño es pequeño:
+    int minimo = 64; 
+    // calculo del algoritmo de Strassen: 
+    Strassen(A_exp, B_exp, C_exp, mitad, minimo);
+
+    // copiamos los resultados de C_exp a la matriz original C:
+    for (i = 0; i < n; ++i) {
+        for (j = 0; j < n; ++j) {
+            C[i][j] = C_exp[i][j];
+        }
+    }
+
+    for (i = 0; i < n; ++i) {
+        V[i] = 0;
+        for (j = 0; j < n; ++j) {
+            V[i] ^= C[i][j];
+        }
+    }
+
+    // se imprimen los valores de V separados por espacios:
+    for (i = 0; i < n; ++i) {
+        cout << V[i] << " ";
+    }
+    cout << endl;
+
+    return 0;
 }
